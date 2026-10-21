@@ -1,0 +1,1733 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TostiHub - El Portal de los Momos Gods y Plinko 360° Insano</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        tosti: {
+                            orange: '#ff9000',
+                            orangeHover: '#ffa324',
+                            bg: '#0a0a0a',
+                            header: '#141414',
+                            card: '#181818',
+                            cardHover: '#242424',
+                            border: '#2a2a2a',
+                            muted: '#a0a0a0',
+                            gold: '#ffd700',
+                            purple: '#9d4edd',
+                            neonGreen: '#00ff66',
+                            neonRed: '#ff0055'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    animation: {
+                        'pulse-fast': 'pulse 0.8s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'spin-slow': 'spin 12s linear infinite',
+                        'bounce-short': 'bounce 0.5s ease-in-out 2',
+                        'glow': 'glow 1.5s ease-in-out infinite alternate',
+                    },
+                    keyframes: {
+                        glow: {
+                            '0%': { boxShadow: '0 0 5px #ff9000, 0 0 10px #ff9000' },
+                            '100%': { boxShadow: '0 0 20px #ff9000, 0 0 35px #ff9000' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f0f0f;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2c2c2c;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #ff9000;
+        }
+
+        .momo-badge {
+            background: linear-gradient(135deg, #ff9000 0%, #d47a00 100%);
+        }
+
+        .secret-badge {
+            background: linear-gradient(135deg, #e0a96d 0%, #ff0055 50%, #9d4edd 100%);
+            background-size: 200% 200%;
+            animation: gradientShift 3s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* Screen Shake effect for crazy wins */
+        .shake-insane {
+            animation: shake 0.35s cubic-bezier(.36,.07,.19,.97) both;
+        }
+
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-3px, -2px, 0) rotate(-1deg); }
+            20%, 80% { transform: translate3d(4px, 3px, 0) rotate(2deg); }
+            30%, 50%, 70% { transform: translate3d(-6px, -4px, 0) rotate(-2deg); }
+            40%, 60% { transform: translate3d(6px, 4px, 0) rotate(2deg); }
+        }
+
+        .canvas-container {
+            position: relative;
+            box-shadow: 0 0 30px rgba(255, 144, 0, 0.2);
+        }
+
+        /* Floating meme reaction animations */
+        .float-reaction {
+            animation: floatUp 1.8s forwards ease-out;
+        }
+
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0) scale(0.8); }
+            50% { opacity: 1; transform: translateY(-30px) scale(1.1); }
+            100% { opacity: 0; transform: translateY(-70px) scale(1); }
+        }
+    </style>
+</head>
+<body class="bg-tosti-bg text-gray-100 font-sans min-h-screen flex flex-col selection:bg-tosti-orange selection:text-black overflow-x-hidden" id="mainBody">
+
+    <!-- Top Announcement Bar -->
+    <div class="bg-[#121212] border-b border-tosti-border text-xs py-1.5 px-4 text-gray-400 flex justify-between items-center z-50">
+        <div class="flex items-center space-x-4 overflow-x-auto whitespace-nowrap">
+            <span class="text-tosti-orange font-bold flex items-center gap-1.5">
+                <i class="fas fa-crown text-yellow-500"></i> EL ARCHIVO DEFINITIVO DE MOMOS GODS
+            </span>
+            <span class="hidden md:inline text-gray-600">|</span>
+            <span class="hidden md:inline hover:text-white cursor-pointer transition" onclick="showToast('¡Bienvenido al Olimpo de los Memes!')">TostiHub Premium SDLG</span>
+            <span class="hidden md:inline hover:text-white cursor-pointer transition" onclick="playRandomMomoSound()">Radio Remixes 24/7</span>
+        </div>
+        
+        <!-- Money Balance Top Pill -->
+        <div class="flex items-center space-x-3 text-xs shrink-0">
+            <div class="bg-[#1f1a0e] border border-amber-500/50 rounded-full px-3 py-0.5 flex items-center gap-1.5 font-bold text-amber-400 shadow-sm">
+                <i class="fas fa-coins text-yellow-400 animate-spin-slow"></i>
+                <span>TostiPesos:</span>
+                <span id="topBalanceDisplay" class="text-white text-xs font-black">$1,000</span>
+            </div>
+            <span class="text-gray-400 hidden sm:inline"><i class="fas fa-users text-tosti-orange mr-1"></i> <span id="onlineUsers">69,420</span> grasosos</span>
+        </div>
+    </div>
+
+    <!-- Main Header -->
+    <header class="bg-tosti-header sticky top-0 z-40 border-b border-tosti-border shadow-xl">
+        <div class="max-w-7xl mx-auto px-3 sm:px-6 py-2.5 flex items-center justify-between gap-2 sm:gap-4">
+            
+            <!-- Logo & Brand Title -->
+            <div class="flex items-center gap-3">
+                <button id="mobileSidebarToggle" class="lg:hidden text-gray-300 hover:text-tosti-orange text-xl p-1 focus:outline-none">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <a href="#" onclick="switchView('portal')" class="flex flex-col group select-none">
+                    <div class="flex items-center font-black text-2xl tracking-tight">
+                        <span class="text-white font-extrabold mr-1">Tosti</span>
+                        <span class="bg-tosti-orange text-black px-2 py-0.5 rounded-md text-xl font-black uppercase tracking-wider group-hover:bg-tosti-orangeHover transition">Hub</span>
+                    </div>
+                    <span class="text-[10px] text-gray-400 -mt-1 font-semibold hidden sm:inline">Momos Gods & Casino Grasoso</span>
+                </a>
+            </div>
+
+            <!-- Real-time Search Bar -->
+            <div class="flex-1 max-w-md mx-2">
+                <div class="relative flex items-center">
+                    <input type="text" id="searchInput" placeholder="Buscar momo god (ej. Edgar, Salchipapa, Ferras)..." 
+                        class="w-full bg-[#0a0a0a] text-sm text-gray-200 placeholder-gray-500 rounded-l-md py-2 pl-4 pr-10 border border-tosti-border focus:outline-none focus:border-tosti-orange transition">
+                    <button id="searchBtn" class="bg-tosti-orange hover:bg-tosti-orangeHover text-black font-bold px-4 py-2 rounded-r-md transition flex items-center justify-center">
+                        <i class="fas fa-search text-base"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Header Action Buttons -->
+            <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+                <!-- SECRET ZONE ACCES BUTTON -->
+                <button onclick="switchView('plinko')" class="secret-badge hover:scale-105 text-white text-xs font-black px-3.5 sm:px-4 py-2 rounded-lg shadow-lg transition-all flex items-center gap-2 border border-yellow-400/50 animate-pulse-fast">
+                    <i class="fas fa-dice-d20 text-yellow-300 text-sm"></i>
+                    <span class="hidden sm:inline uppercase tracking-wide">🎰 ZONA SECRETA: PLINKO 360°</span>
+                    <span class="sm:hidden font-black">360° PLINKO</span>
+                </button>
+
+                <button onclick="playRandomMomo()" class="bg-[#222] hover:bg-[#2c2c2c] text-tosti-orange text-xs font-black px-3 py-2 rounded-md border border-tosti-border transition flex items-center gap-1.5">
+                    <i class="fas fa-random"></i>
+                    <span class="hidden md:inline">Aleatorio</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Category Navigation Tabs -->
+        <nav class="bg-[#121212] border-t border-tosti-border text-xs font-bold">
+            <div class="max-w-7xl mx-auto px-4 flex items-center justify-between overflow-x-auto py-1.5 scrollbar-none">
+                <div class="flex items-center space-x-1 shrink-0">
+                    <button onclick="filterCategory('Todos')" class="cat-tab active-tab bg-tosti-orange text-black px-3.5 py-1.5 rounded-md transition shrink-0 flex items-center gap-1.5">
+                        <i class="fas fa-fire"></i> Todos
+                    </button>
+                    <button onclick="filterCategory('Clásicos 2000s')" class="cat-tab bg-[#222] hover:bg-tosti-border text-gray-300 px-3.5 py-1.5 rounded-md transition shrink-0 flex items-center gap-1.5">
+                        <i class="fas fa-history text-amber-500"></i> Clásicos 2000s
+                    </button>
+                    <button onclick="filterCategory('Entrevistas Leyendas')" class="cat-tab bg-[#222] hover:bg-tosti-border text-gray-300 px-3.5 py-1.5 rounded-md transition shrink-0 flex items-center gap-1.5">
+                        <i class="fas fa-microphone text-tosti-orange"></i> Entrevistas Leyendas
+                    </button>
+                    <button onclick="filterCategory('Remixes & Cumbias')" class="cat-tab bg-[#222] hover:bg-tosti-border text-gray-300 px-3.5 py-1.5 rounded-md transition shrink-0 flex items-center gap-1.5">
+                        <i class="fas fa-music text-purple-400"></i> Remixes & Cumbias
+                    </button>
+                    <button onclick="filterCategory('Gritados')" class="cat-tab bg-[#222] hover:bg-tosti-border text-gray-300 px-3.5 py-1.5 rounded-md transition shrink-0 flex items-center gap-1.5">
+                        <i class="fas fa-volume-up text-red-500"></i> Gritados
+                    </button>
+                    <button onclick="filterCategory('SDLG / Grasosos')" class="cat-tab bg-[#222] hover:bg-tosti-border text-gray-300 px-3.5 py-1.5 rounded-md transition shrink-0 flex items-center gap-1.5">
+                        <i class="fas fa-smile-wink text-yellow-400"></i> SDLG / Grasosos
+                    </button>
+                </div>
+
+                <button onclick="switchView('plinko')" class="ml-2 text-yellow-400 hover:text-yellow-300 font-black text-xs shrink-0 flex items-center gap-1 bg-[#231b0e] px-3 py-1 rounded border border-amber-500/40">
+                    <i class="fas fa-gamepad text-tosti-orange"></i>
+                    <span>Ir al Plinko 360°</span>
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- SECTION 1: STANDARD VIDEO PORTAL VIEW -->
+    <div id="portalView" class="max-w-7xl mx-auto px-3 sm:px-6 py-6 flex-1 flex gap-6 w-full">
+        
+        <!-- Left Sidebar Navigation -->
+        <aside id="sidebar" class="w-60 shrink-0 hidden lg:block space-y-5">
+            
+            <!-- Plinko Banner Advert Sidebar -->
+            <div onclick="switchView('plinko')" class="bg-gradient-to-br from-[#2a133d] via-[#1a0e28] to-[#120a1c] rounded-xl p-4 border border-purple-500/50 shadow-xl cursor-pointer hover:border-purple-400 transition-all group relative overflow-hidden">
+                <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-purple-500/20 rounded-full blur-xl group-hover:scale-150 transition-transform"></div>
+                <div class="flex items-center justify-between mb-2">
+                    <span class="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-black text-[9px] px-2 py-0.5 rounded tracking-widest uppercase">ZONA CASINO</span>
+                    <i class="fas fa-bolt text-yellow-400 text-sm animate-bounce"></i>
+                </div>
+                <h3 class="font-black text-sm text-white group-hover:text-amber-300 transition">PLINKO 360° GIRATORIO</h3>
+                <p class="text-[11px] text-purple-200/80 my-2 leading-tight">¡Apuesta tus TostiPesos en el Plinko más insano con multiplicadores hasta 100x!</p>
+                <button class="w-full bg-gradient-to-r from-amber-500 to-tosti-orange text-black font-black text-xs py-1.5 rounded-lg shadow-md group-hover:bg-amber-400 transition flex items-center justify-center gap-1.5">
+                    <i class="fas fa-play text-[10px]"></i> Entrar Ahora
+                </button>
+            </div>
+
+            <!-- Quick Navigation Box -->
+            <div class="bg-tosti-card rounded-lg p-3.5 border border-tosti-border shadow-md">
+                <h3 class="text-xs font-black text-tosti-orange uppercase tracking-wider mb-2 px-1 flex items-center justify-between">
+                    <span>Navegación</span>
+                    <i class="fas fa-compass"></i>
+                </h3>
+                <ul class="space-y-1 text-xs font-semibold">
+                    <li>
+                        <a href="#" onclick="resetAllFilters()" class="flex items-center justify-between p-2 rounded hover:bg-[#252525] text-gray-200 hover:text-tosti-orange transition">
+                            <span class="flex items-center gap-2"><i class="fas fa-star text-tosti-orange"></i> Todos los Momos</span>
+                            <span class="text-[10px] bg-tosti-border px-1.5 py-0.5 rounded text-gray-400">12</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" onclick="sortMomos('views')" class="flex items-center justify-between p-2 rounded hover:bg-[#252525] text-gray-200 hover:text-tosti-orange transition">
+                            <span class="flex items-center gap-2"><i class="fas fa-chart-line text-tosti-orange"></i> Los Más Vistos</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" onclick="sortMomos('rating')" class="flex items-center justify-between p-2 rounded hover:bg-[#252525] text-gray-200 hover:text-tosti-orange transition">
+                            <span class="flex items-center gap-2"><i class="fas fa-thumbs-up text-tosti-orange"></i> 100% Aprobados</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Legend Banner Card -->
+            <div class="bg-gradient-to-br from-[#1e1a12] via-[#241f14] to-[#121212] rounded-lg p-4 border border-tosti-orange/40 text-center shadow-lg relative overflow-hidden">
+                <div class="w-16 h-16 rounded-full mx-auto mb-2.5 p-0.5 border-2 border-tosti-orange overflow-hidden bg-black shadow-md">
+                    <img src="https://img.youtube.com/vi/b89CnP0Iq30/hqdefault.jpg" class="w-full h-full object-cover rounded-full" alt="Edgar God">
+                </div>
+                <h4 class="font-black text-sm text-white flex items-center justify-center gap-1">
+                    Edgar Martinez <i class="fas fa-check-circle text-tosti-orange text-xs"></i>
+                </h4>
+                <p class="text-[11px] text-gray-400 mb-3">MomoStar de la Década (¡Ya güey!)</p>
+                <button onclick="openMomoModal(1)" class="w-full bg-tosti-orange hover:bg-tosti-orangeHover text-black text-xs font-black py-1.5 rounded transition shadow">
+                    <i class="fas fa-play text-[10px] mr-1"></i> Ver Caída Original
+                </button>
+            </div>
+
+        </aside>
+
+        <!-- Main Video Grid Area -->
+        <main class="flex-1 min-w-0">
+            
+            <!-- Controls Bar: Category Title & Sorting -->
+            <div class="bg-tosti-card p-3 rounded-lg border border-tosti-border mb-5 flex flex-wrap items-center justify-between gap-3 shadow-md">
+                
+                <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-5 bg-tosti-orange rounded-sm inline-block"></span>
+                    <h2 id="currentCategoryTitle" class="text-base font-black text-white tracking-wide">
+                        Todos los Momos Gods
+                    </h2>
+                </div>
+
+                <!-- Sorting Dropdown -->
+                <div class="flex items-center gap-2 text-xs text-gray-400 ml-auto">
+                    <span class="font-semibold text-gray-400"><i class="fas fa-sort text-tosti-orange mr-1"></i> Ordenar:</span>
+                    <select id="sortSelect" onchange="sortMomos(this.value)" class="bg-[#111111] text-gray-200 border border-tosti-border rounded px-3 py-1.5 text-xs font-bold focus:outline-none focus:border-tosti-orange cursor-pointer">
+                        <option value="views">Más Vistos (Vistas)</option>
+                        <option value="rating">Mejor Valorados (%)</option>
+                        <option value="recent">Momos Recientes</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Video Grid -->
+            <div id="momoGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                <!-- Dynamically Populated Cards -->
+            </div>
+
+            <!-- Empty Search Results State -->
+            <div id="emptyState" class="hidden text-center py-16 bg-tosti-card rounded-lg border border-tosti-border my-4 shadow-inner">
+                <i class="fas fa-sad-tear text-5xl text-tosti-orange mb-3 opacity-80"></i>
+                <h3 class="text-lg font-black text-gray-200">No se encontraron momos papu :v</h3>
+                <p class="text-xs text-gray-400 mt-1 mb-5">Intenta buscar otra palabra clave como "Edgar", "Salchipapa", "Ferras" o "Canaca".</p>
+                <button onclick="resetAllFilters()" class="bg-tosti-orange text-black px-5 py-2 rounded-md text-xs font-black hover:bg-tosti-orangeHover transition shadow-lg">
+                    Mostrar todos los Momos Gods
+                </button>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- SECTION 2: SECRET ZONE - CRAZY 360° PLINKO CASINO -->
+    <div id="plinkoView" class="hidden max-w-7xl mx-auto px-3 sm:px-6 py-6 flex-1 w-full">
+        
+        <!-- Plinko Header Bar -->
+        <div class="bg-gradient-to-r from-[#1d122c] via-[#2a133d] to-[#1d122c] border border-purple-500/40 rounded-xl p-4 mb-6 shadow-2xl flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-purple-600 to-pink-500 flex items-center justify-center text-white text-2xl shadow-lg animate-bounce">
+                    🎰
+                </div>
+                <div>
+                    <h1 class="text-xl sm:text-2xl font-black text-white flex items-center gap-2">
+                        PLINKO 360° GIRATORIO <span class="bg-red-600 text-white text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider font-extrabold animate-pulse">INSANO</span>
+                    </h1>
+                    <p class="text-xs text-purple-200/80">¡Las clavijas giran sin parar! Deja caer las bolas, multiplica tus TostiPesos y desata reacciones de Momos Gods.</p>
+                </div>
+            </div>
+
+            <!-- Quick Action Stats & Bankrupt Claim -->
+            <div class="flex items-center gap-3 ml-auto">
+                <button onclick="claimLimosna()" class="bg-amber-500 hover:bg-amber-400 text-black text-xs font-black px-3.5 py-2 rounded-lg shadow-lg transition flex items-center gap-1.5 border border-yellow-300">
+                    <i class="fas fa-hand-holding-usd text-base"></i>
+                    <span>¡Pedir Limosna Grasosa! (+$500)</span>
+                </button>
+                <button onclick="switchView('portal')" class="bg-[#222] hover:bg-[#333] text-gray-300 text-xs font-bold px-3 py-2 rounded-lg border border-tosti-border transition">
+                    <i class="fas fa-arrow-left mr-1"></i> Volver a los Momos
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Plinko Game Grid (3 Columns) -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            
+            <!-- Left Controls Column (4 cols) -->
+            <div class="lg:col-span-4 bg-tosti-card rounded-xl p-5 border border-tosti-border shadow-xl space-y-5">
+                
+                <!-- Wallet & Stats -->
+                <div class="bg-[#121212] p-4 rounded-lg border border-amber-500/30 flex items-center justify-between">
+                    <div>
+                        <span class="text-[11px] text-gray-400 uppercase font-black tracking-wider block">Saldo TostiPesos</span>
+                        <span id="plinkoWalletDisplay" class="text-2xl font-black text-amber-400 tracking-tight">$1,000</span>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-[10px] text-gray-400 uppercase font-bold block">Última Ganancia</span>
+                        <span id="lastWinDisplay" class="text-lg font-black text-tosti-neonGreen">+$0</span>
+                    </div>
+                </div>
+
+                <!-- Bet Selection -->
+                <div>
+                    <label class="block text-xs font-black uppercase text-gray-300 mb-2 flex justify-between">
+                        <span>Monto de Apuesta (por bola)</span>
+                        <span class="text-tosti-orange font-extrabold" id="currentBetText">$50</span>
+                    </label>
+                    <div class="grid grid-cols-5 gap-1.5 mb-2">
+                        <button onclick="setBet(10)" class="bet-btn bg-[#222] hover:bg-tosti-orange hover:text-black font-extrabold text-xs py-2 rounded border border-tosti-border transition text-gray-200">$10</button>
+                        <button onclick="setBet(50)" class="bet-btn bg-tosti-orange text-black font-extrabold text-xs py-2 rounded border border-tosti-border transition">$50</button>
+                        <button onclick="setBet(100)" class="bet-btn bg-[#222] hover:bg-tosti-orange hover:text-black font-extrabold text-xs py-2 rounded border border-tosti-border transition text-gray-200">$100</button>
+                        <button onclick="setBet(500)" class="bet-btn bg-[#222] hover:bg-tosti-orange hover:text-black font-extrabold text-xs py-2 rounded border border-tosti-border transition text-gray-200">$500</button>
+                        <button onclick="setBetAllIn()" class="bet-btn bg-red-600 hover:bg-red-500 font-extrabold text-xs py-2 rounded transition text-white">ALL IN</button>
+                    </div>
+                    <input type="range" id="betSlider" min="10" max="1000" step="10" value="50" oninput="updateBetFromSlider(this.value)" class="w-full accent-tosti-orange cursor-pointer">
+                </div>
+
+                <!-- Ball Burst Count -->
+                <div>
+                    <label class="block text-xs font-black uppercase text-gray-300 mb-2">
+                        Cantidad de Bolas a Lanzar
+                    </label>
+                    <div class="grid grid-cols-4 gap-2">
+                        <button onclick="setBallBurst(1)" class="burst-btn bg-tosti-orange text-black font-black text-xs py-2 rounded transition">1 Bola</button>
+                        <button onclick="setBallBurst(5)" class="burst-btn bg-[#222] text-gray-300 hover:bg-[#333] font-black text-xs py-2 rounded transition">5 Bolas</button>
+                        <button onclick="setBallBurst(10)" class="burst-btn bg-[#222] text-gray-300 hover:bg-[#333] font-black text-xs py-2 rounded transition">10 Ráfaga</button>
+                        <button onclick="toggleAutoDrop()" id="autoDropBtn" class="bg-purple-900/60 hover:bg-purple-800 text-purple-300 border border-purple-500/40 font-black text-xs py-2 rounded transition">
+                            AUTO
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Rotation Speed Controls -->
+                <div>
+                    <label class="block text-xs font-black uppercase text-gray-300 mb-2 flex justify-between">
+                        <span>Velocidad de Giro 360°</span>
+                        <span id="speedLabel" class="text-purple-400 font-bold">Modo Insano ⚡</span>
+                    </label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button onclick="setRotationSpeed('normal')" class="speed-btn bg-[#222] text-gray-300 font-bold text-xs py-1.5 rounded transition">Normal</button>
+                        <button onclick="setRotationSpeed('insane')" class="speed-btn bg-purple-600 text-white font-bold text-xs py-1.5 rounded transition">Insano ⚡</button>
+                        <button onclick="setRotationSpeed('god')" class="speed-btn bg-[#222] text-gray-300 font-bold text-xs py-1.5 rounded transition">Super Sayayin 🔥</button>
+                    </div>
+                </div>
+
+                <!-- DROP BALLS MAIN BUTTON -->
+                <button id="dropBtn" onclick="triggerDrop()" class="w-full bg-gradient-to-r from-amber-500 via-tosti-orange to-amber-600 hover:from-amber-400 hover:to-tosti-orange text-black font-black text-lg py-3.5 rounded-xl shadow-2xl transition transform active:scale-95 flex items-center justify-center gap-2 border-2 border-yellow-300">
+                    <i class="fas fa-bowling-ball text-xl"></i>
+                    <span>¡LANZAR BOLAS Y APOSTAR!</span>
+                </button>
+
+                <!-- Multiplier Legend -->
+                <div class="pt-2 border-t border-tosti-border text-[11px] text-gray-400">
+                    <span class="font-bold text-gray-300 block mb-1">Multiplicadores en la Rueda Circular:</span>
+                    <div class="flex flex-wrap gap-1 text-[10px] font-black">
+                        <span class="px-1.5 py-0.5 rounded bg-red-900 text-red-300">100x GOD</span>
+                        <span class="px-1.5 py-0.5 rounded bg-amber-900 text-amber-300">50x</span>
+                        <span class="px-1.5 py-0.5 rounded bg-yellow-900 text-yellow-300">25x</span>
+                        <span class="px-1.5 py-0.5 rounded bg-purple-900 text-purple-300">10x</span>
+                        <span class="px-1.5 py-0.5 rounded bg-blue-900 text-blue-300">3x</span>
+                        <span class="px-1.5 py-0.5 rounded bg-gray-800 text-gray-300">1x</span>
+                        <span class="px-1.5 py-0.5 rounded bg-stone-900 text-stone-400">0.1x</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Center Column: Rotating Canvas (5 cols) -->
+            <div class="lg:col-span-5 flex flex-col items-center justify-center">
+                
+                <div id="canvasCard" class="canvas-container bg-[#0e0a14] rounded-2xl p-3 border-2 border-purple-500/40 relative overflow-hidden w-full flex items-center justify-center">
+                    
+                    <!-- Real-time floating reaction popup container inside canvas -->
+                    <div id="momoReactionOverlay" class="absolute inset-0 pointer-events-none z-20 flex flex-col items-center justify-center"></div>
+
+                    <!-- Canvas Element -->
+                    <canvas id="plinkoCanvas" width="520" height="520" class="max-w-full h-auto rounded-xl cursor-crosshair"></canvas>
+                </div>
+
+                <p class="text-[11px] text-gray-500 mt-2 text-center">
+                    <i class="fas fa-info-circle mr-1"></i> Haz clic directamente dentro de la rueda giratoria para lanzar bolas en esa dirección.
+                </p>
+
+            </div>
+
+            <!-- Right Column: Live Momo Feed & Drops History (3 cols) -->
+            <div class="lg:col-span-3 space-y-5">
+                
+                <!-- Live Multipliers History Bar -->
+                <div class="bg-tosti-card rounded-xl p-4 border border-tosti-border shadow-xl">
+                    <h3 class="text-xs font-black uppercase text-tosti-orange mb-2 flex items-center justify-between">
+                        <span>Historial de Caídas</span>
+                        <i class="fas fa-history text-xs"></i>
+                    </h3>
+                    <div id="dropHistoryList" class="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto pr-1">
+                        <!-- Populated dynamically -->
+                        <span class="text-[10px] text-gray-500 italic">Lanza una bola para ver la racha...</span>
+                    </div>
+                </div>
+
+                <!-- Live Momo Reaction Card -->
+                <div class="bg-gradient-to-br from-[#1c1822] to-[#121212] rounded-xl p-4 border border-purple-500/30 shadow-xl text-center relative overflow-hidden">
+                    <span class="text-[10px] uppercase font-black text-purple-400 tracking-wider block mb-2">REACCIÓN EN VIVO EN INTERNET</span>
+                    
+                    <div id="momoMemeBox" class="min-h-[160px] flex flex-col items-center justify-center">
+                        <img id="momoMemeImg" src="https://img.youtube.com/vi/b89CnP0Iq30/hqdefault.jpg" class="w-24 h-24 object-cover rounded-full border-2 border-tosti-orange shadow-lg mb-2 transition transform duration-300">
+                        <h4 id="momoMemeTitle" class="font-black text-xs text-white">¡Esperando jugada insana!</h4>
+                        <p id="momoMemeQuote" class="text-[11px] text-amber-300 italic mt-1">"¡Si caes en 100x te vuelves el rey de la grasa!"</p>
+                    </div>
+                </div>
+
+                <!-- Mini Leaderboard -->
+                <div class="bg-tosti-card rounded-xl p-4 border border-tosti-border shadow-xl">
+                    <h3 class="text-xs font-black uppercase text-yellow-400 mb-2 flex items-center justify-between">
+                        <span>Gods del Plinko</span>
+                        <i class="fas fa-trophy text-amber-400"></i>
+                    </h3>
+                    <ul class="space-y-2 text-xs font-medium">
+                        <li class="flex justify-between items-center bg-[#111] p-2 rounded border border-tosti-border">
+                            <span class="text-gray-200"><i class="fas fa-crown text-yellow-500 mr-1"></i> FerrasGod</span>
+                            <span class="text-amber-400 font-black">$45,200</span>
+                        </li>
+                        <li class="flex justify-between items-center bg-[#111] p-2 rounded border border-tosti-border">
+                            <span class="text-gray-300"><i class="fas fa-medal text-gray-400 mr-1"></i> EdgarPro</span>
+                            <span class="text-amber-400 font-black">$28,100</span>
+                        </li>
+                        <li class="flex justify-between items-center bg-[#111] p-2 rounded border border-tosti-border">
+                            <span class="text-gray-300"><i class="fas fa-award text-amber-700 mr-1"></i> Canaca3000</span>
+                            <span class="text-amber-400 font-black">$14,500</span>
+                        </li>
+                    </ul>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Video Modal Player -->
+    <div id="videoModal" class="fixed inset-0 bg-black/90 z-50 hidden flex items-center justify-center p-2 sm:p-4 overflow-y-auto backdrop-blur-md">
+        <div class="bg-[#141414] border border-tosti-border rounded-xl w-full max-w-5xl overflow-hidden shadow-2xl my-auto">
+            
+            <!-- Modal Header Bar -->
+            <div class="bg-[#1c1c1c] px-4 py-2.5 border-b border-tosti-border flex justify-between items-center">
+                <div class="flex items-center gap-2 text-xs font-black text-tosti-orange uppercase tracking-wider">
+                    <span class="bg-tosti-orange text-black px-1.5 py-0.5 rounded text-[10px]">REPRODUCIENDO</span>
+                    <span id="modalMomoCategory" class="text-white"></span>
+                </div>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-tosti-orange text-2xl font-bold px-2 focus:outline-none transition">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <!-- Player & Content Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-3">
+                
+                <!-- Left: Embedded Player & Interaction Details -->
+                <div class="lg:col-span-2 p-3 sm:p-5 border-b lg:border-b-0 lg:border-r border-tosti-border">
+                    
+                    <div class="relative bg-black rounded-lg overflow-hidden aspect-video border border-tosti-border shadow-2xl group">
+                        <iframe id="modalIframe" class="w-full h-full" src="" title="Momo Player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                    </div>
+
+                    <!-- Video Information -->
+                    <div class="mt-4">
+                        <div class="flex items-start justify-between gap-2">
+                            <h1 id="modalMomoTitle" class="text-base sm:text-lg font-black text-white leading-snug"></h1>
+                            <span class="momo-badge text-black font-extrabold text-[10px] px-2 py-0.5 rounded shadow shrink-0">
+                                MOMO GOD
+                            </span>
+                        </div>
+                        
+                        <!-- Metadata Line -->
+                        <div class="flex flex-wrap items-center justify-between gap-3 mt-3 pb-3 border-b border-tosti-border text-xs text-gray-400">
+                            <div class="flex items-center gap-3 font-medium">
+                                <span><i class="fas fa-eye text-tosti-orange mr-1"></i> <span id="modalMomoViews"></span> vistas</span>
+                                <span>•</span>
+                                <span><i class="fas fa-calendar-alt text-tosti-orange mr-1"></i> <span id="modalMomoDate"></span></span>
+                            </div>
+
+                            <div class="flex items-center gap-2">
+                                <button id="likeBtn" onclick="toggleLike()" class="bg-[#222] hover:bg-[#2e2e2e] text-gray-200 px-3 py-1.5 rounded-md flex items-center gap-1.5 font-bold transition text-xs border border-tosti-border">
+                                    <i class="fas fa-thumbs-up text-tosti-orange"></i>
+                                    <span id="modalMomoRating"></span>
+                                </button>
+                                <button onclick="shareMomo()" class="bg-[#222] hover:bg-[#2e2e2e] text-gray-200 px-3 py-1.5 rounded-md flex items-center gap-1.5 font-bold transition text-xs border border-tosti-border">
+                                    <i class="fas fa-share-alt text-tosti-orange"></i>
+                                    <span>Compartir</span>
+                                </button>
+                                <button id="saveBtn" onclick="toggleSaveMomo()" class="bg-[#222] hover:bg-[#2e2e2e] text-gray-200 px-3 py-1.5 rounded-md flex items-center gap-1.5 font-bold transition text-xs border border-tosti-border">
+                                    <i class="fas fa-bookmark text-tosti-orange"></i>
+                                    <span id="saveBtnText">Guardar Momo</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Momo Description -->
+                        <div class="mt-3 bg-[#181818] p-3 rounded-lg border border-tosti-border text-xs text-gray-300 leading-relaxed">
+                            <p id="modalMomoDesc"></p>
+                        </div>
+                    </div>
+
+                    <!-- Interactive Comments Section -->
+                    <div class="mt-5">
+                        <h3 class="text-xs font-black text-white uppercase tracking-wider mb-3 flex items-center gap-2">
+                            <i class="fas fa-comments text-tosti-orange"></i> Momo-Comentarios (<span id="commentsCount">3</span>)
+                        </h3>
+                        
+                        <div class="flex gap-2 mb-4">
+                            <input type="text" id="commentInput" placeholder="Escribe un comentario grasoso (+10 papu)..." 
+                                class="flex-1 bg-[#0a0a0a] border border-tosti-border text-xs rounded-md px-3 py-2 text-gray-200 focus:outline-none focus:border-tosti-orange">
+                            <button onclick="postComment()" class="bg-tosti-orange text-black font-black text-xs px-4 py-2 rounded-md hover:bg-tosti-orangeHover transition shrink-0">
+                                Publicar
+                            </button>
+                        </div>
+
+                        <div id="commentsList" class="space-y-2.5 max-h-48 overflow-y-auto pr-1">
+                            <!-- Populated via JS -->
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Right: Recommended Momos List -->
+                <div class="p-3 sm:p-4 bg-[#111111]">
+                    <h3 class="text-xs font-black text-tosti-orange uppercase tracking-wider mb-3 flex items-center justify-between">
+                        <span>Momos Recomendados</span>
+                        <i class="fas fa-random"></i>
+                    </h3>
+                    <div id="recommendedGrid" class="space-y-2.5 max-h-[620px] overflow-y-auto pr-1">
+                        <!-- Populated via JS -->
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <!-- GRAND JACKPOT CELEBRATION MODAL -->
+    <div id="jackpotModal" class="fixed inset-0 bg-black/95 z-50 hidden flex items-center justify-center p-4 backdrop-blur-md">
+        <div class="bg-gradient-to-br from-[#2a133d] via-[#1f0b2e] to-[#0f0518] border-2 border-amber-400 rounded-2xl max-w-lg w-full p-6 text-center shadow-2xl relative overflow-hidden animate-bounce-short">
+            <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,215,0,0.2),transparent_70%)] pointer-events-none"></div>
+            
+            <div class="w-24 h-24 rounded-full border-4 border-amber-400 mx-auto overflow-hidden shadow-2xl mb-4 bg-black">
+                <img id="jackpotImg" src="https://img.youtube.com/vi/u0yT7v7S2iY/hqdefault.jpg" class="w-full h-full object-cover">
+            </div>
+
+            <span class="bg-gradient-to-r from-amber-400 to-yellow-500 text-black font-black text-xs px-3 py-1 rounded-full uppercase tracking-widest inline-block mb-2">
+                ¡MULTIPLICADOR GOD DESATADO!
+            </span>
+
+            <h2 id="jackpotTitle" class="text-2xl font-black text-white mb-1">¡ESTO SE VA A DESCONTROLAR!</h2>
+            <p id="jackpotSub" class="text-amber-300 font-bold text-sm mb-4">Has ganado un multiplicador de <span id="jackpotMultText" class="text-yellow-400 font-extrabold text-xl">100x</span></p>
+
+            <div class="bg-[#120a1c] border border-amber-500/40 rounded-xl p-4 mb-6">
+                <span class="text-xs text-gray-400 block uppercase font-bold">Premio Ganado</span>
+                <span id="jackpotAmountText" class="text-3xl font-black text-amber-400 tracking-tight">$5,000 TOSTIPESOS</span>
+            </div>
+
+            <button onclick="closeJackpotModal()" class="w-full bg-gradient-to-r from-amber-500 to-tosti-orange text-black font-black text-sm py-3 rounded-xl shadow-lg hover:scale-105 transition">
+                ¡RECLAMAR GANANCIA Y SEGUIR JUGANDO!
+            </button>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-tosti-orange text-black font-black px-4 py-3 rounded-lg shadow-2xl translate-y-24 opacity-0 transition-all duration-300 z-50 flex items-center gap-2.5 text-xs border border-amber-300">
+        <i class="fas fa-check-circle text-base"></i>
+        <span id="toastMsg">Notificación activa</span>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-tosti-header border-t border-tosti-border text-gray-400 text-xs mt-12 z-10">
+        <div class="max-w-7xl mx-auto px-4 py-8">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+                <div>
+                    <h4 class="text-white font-bold mb-3 uppercase tracking-wider text-xs">TostiHub SDLG</h4>
+                    <ul class="space-y-2 text-xs">
+                        <li><a href="#" onclick="showToast('TostiHub v3.0 - Edición Casino 360')" class="hover:text-tosti-orange transition">Acerca del Portal</a></li>
+                        <li><a href="#" onclick="showToast('Normas: Prohibido quitar los créditos')" class="hover:text-tosti-orange transition">Código Grasoso</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold mb-3 uppercase tracking-wider text-xs">Secciones Gods</h4>
+                    <ul class="space-y-2 text-xs">
+                        <li><a href="#" onclick="switchView('plinko')" class="hover:text-tosti-orange transition text-amber-400 font-bold">🎰 Plinko 360° Insano</a></li>
+                        <li><a href="#" onclick="filterCategory('Clásicos 2000s')" class="hover:text-tosti-orange transition">Clásicos YouTube 2007</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold mb-3 uppercase tracking-wider text-xs">Comunidad</h4>
+                    <ul class="space-y-2 text-xs">
+                        <li><a href="#" onclick="showToast('Servidor de Discord Grasoso cargado')" class="hover:text-tosti-orange transition">Discord TostiHub</a></li>
+                        <li><a href="#" onclick="claimLimosna()" class="hover:text-tosti-orange transition">Pedir TostiPesos</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold mb-3 uppercase tracking-wider text-xs">Garantía God</h4>
+                    <p class="text-gray-500 mb-2.5 leading-relaxed">Contenido 100% nostálgico con físicas de Plinko 360° no simuladas por Inteligencia Alienígena.</p>
+                </div>
+            </div>
+
+            <div class="border-t border-tosti-border pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="flex items-center gap-2">
+                    <span class="text-white font-black text-lg">Tosti<span class="bg-tosti-orange text-black px-1.5 py-0.5 rounded text-sm font-black uppercase">Hub</span></span>
+                    <span class="text-gray-600 text-xs">© 2026 TostiHub - Todos los derechos reservados a los Momos Gods.</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // Database of Momos Gods
+        const momosData = [
+            {
+                id: 1,
+                title: "La Caída de Edgar (¡Ya güey! ¡Pinche pendejo güey!)",
+                author: "EdgarGrasoso_06",
+                youtubeId: "b89CnP0Iq30",
+                duration: "1:18",
+                views: "68.4M",
+                viewsNum: 68400000,
+                rating: 99,
+                date: "Hace 18 años",
+                category: "Clásicos 2000s",
+                desc: "El meme rey de la internet mexicana. Edgar intentando cruzar un arroyo sobre un tronco hasta que Fernando comete la traición más grande de la historia."
+            },
+            {
+                id: 2,
+                title: "Me compré una salchipapa... ¡Y qué sabroso! (Niño Salchipapa)",
+                author: "SalchipapaGod",
+                youtubeId: "2Q21e25g0p8",
+                duration: "0:42",
+                views: "42.1M",
+                viewsNum: 42100000,
+                rating: 98,
+                date: "Hace 10 años",
+                category: "Remixes & Cumbias",
+                desc: "Me compré una salchipapa, me compré una salchipapa... ¡ay qué sabrosa! Pero me quedó un dolor en la garganta porque no me alcanzó para la gaseosa."
+            },
+            {
+                id: 3,
+                title: "Esto se va a descontrolar... ¡AYUDA, AUXILIO!",
+                author: "DescontrolTotal",
+                youtubeId: "u0yT7v7S2iY",
+                duration: "0:35",
+                views: "35.8M",
+                viewsNum: 35800000,
+                rating: 97,
+                date: "Hace 8 años",
+                category: "Gritados",
+                desc: "El techo cede durante una fiesta casera y la estructura colapsa en un segundo de puro caos latinoamericano inolvidable."
+            },
+            {
+                id: 4,
+                title: "La Chica 13 (Tengo 13 años... ¿y qué?)",
+                author: "Chica13Legend",
+                youtubeId: "eG2S-eO0yYg",
+                duration: "2:15",
+                views: "19.5M",
+                viewsNum: 19500000,
+                rating: 96,
+                date: "Hace 14 años",
+                category: "Entrevistas Leyendas",
+                desc: "Entrevista épica en noticiero de televisión que se convirtió de inmediato en patrimonio cultural de los memes hispanos."
+            },
+            {
+                id: 5,
+                title: "El Canaca (¡Y mis 50 mil pesos qué! Hijo de la guayaba)",
+                author: "PromotoraCentral",
+                youtubeId: "Lp51T8L8bE0",
+                duration: "2:40",
+                views: "29.3M",
+                viewsNum: 29300000,
+                rating: 99,
+                date: "Hace 17 años",
+                category: "Entrevistas Leyendas",
+                desc: "Guillermo López Langarica, Presidente de la Promotora Central de Abastos de Guadalajara. ¡Apoyado por los comerciantes de la Central de Abastos!"
+            },
+            {
+                id: 6,
+                title: "El Ferras (La bala fría / Y le dije: Te voy a zapatear la cara)",
+                author: "VeracruzPoder",
+                youtubeId: "pQh5W1q0kEE",
+                duration: "3:10",
+                views: "31.2M",
+                viewsNum: 31200000,
+                rating: 98,
+                date: "Hace 16 años",
+                category: "Entrevistas Leyendas",
+                desc: "Felipe Ferra Gómez, alias 'El Ferras', contando su icónico relato con una elocuencia que inspiró frases inolvidables en todo internet."
+            },
+            {
+                id: 7,
+                title: "Obedece a la Morsa (El clásico del terror de YouTube 2007)",
+                author: "CreepyMomo07",
+                youtubeId: "w097Q0fZE-M",
+                duration: "2:50",
+                views: "85.0M",
+                viewsNum: 85000000,
+                rating: 94,
+                date: "Hace 17 años",
+                category: "Clásicos 2000s",
+                desc: "El video con música de la Sirenita al revés que traumatizó a toda una generación de niños internautas en el YouTube de 2007."
+            },
+            {
+                id: 8,
+                title: "Afirmativo Señorita / El Gato Miu Miu",
+                author: "SDLG_Oficial",
+                youtubeId: "k_U_M2R6iXw",
+                duration: "1:05",
+                views: "14.2M",
+                viewsNum: 14200000,
+                rating: 95,
+                date: "Hace 9 años",
+                category: "SDLG / Grasosos",
+                desc: "Miu miu miu... Afirmativo señorita. Uno de los mayores exponentes audiovisual del humor grasoso de la época dorada."
+            },
+            {
+                id: 9,
+                title: "Traigo el flow, la cosita... ¡Mami tú estás bien rica!",
+                author: "FlowSabanero",
+                youtubeId: "pT23d4-R8x4",
+                duration: "1:30",
+                views: "22.7M",
+                viewsNum: 22700000,
+                rating: 96,
+                date: "Hace 11 años",
+                category: "Remixes & Cumbias",
+                desc: "Ritmo inigualable, paso de baile prohibido y el flow sabanero en su máxima expresión de sabor latino."
+            },
+            {
+                id: 10,
+                title: "El Vendedor de Empanadas de Acapulco (Mercadotecnia GOD)",
+                author: "AcapulcoVibes",
+                youtubeId: "QdFpX-0gI3Y",
+                duration: "3:15",
+                views: "18.9M",
+                viewsNum: 18900000,
+                rating: 98,
+                date: "Hace 8 años",
+                category: "Entrevistas Leyendas",
+                desc: "Paco, el joven vendedor con la oratoria en ventas más persuasiva y brillante que haya pisado las playas de Acapulco."
+            },
+            {
+                id: 11,
+                title: "Viejito que se le apaga la tele: ¡NO MANCHES! / ¿Qué le pasó?",
+                author: "TeleApagada",
+                youtubeId: "8Z72p6I4N9Y",
+                duration: "0:25",
+                views: "12.4M",
+                viewsNum: 12400000,
+                rating: 96,
+                date: "Hace 7 años",
+                category: "Gritados",
+                desc: "Reacción instantánea y desesperada ante el apagón de pantalla en pleno momento estelar de la televisión."
+            },
+            {
+                id: 12,
+                title: "Las Chicas Superponedoras / Niño Rata de Minecraft",
+                author: "GrasosoAlpha",
+                youtubeId: "6O3h8lOaO-E",
+                duration: "1:45",
+                views: "27.1M",
+                viewsNum: 27100000,
+                rating: 93,
+                date: "Hace 10 años",
+                category: "SDLG / Grasosos",
+                desc: "El legendario grito de rabia de un gamer al ser destruida su casa de diamante en Minecraft."
+            }
+        ];
+
+        // Global State Variables
+        let currentCategory = 'Todos';
+        let currentSort = 'views';
+        let searchQuery = '';
+        let currentMomo = null;
+        let savedMomosList = [];
+
+        // Wallet & Gambling State
+        let userWallet = 1000;
+        let currentBet = 50;
+        let ballBurstCount = 1;
+        let isAutoDrop = false;
+        let autoDropInterval = null;
+        let rotationSpeedFactor = 0.035; // Insane speed default
+
+        // Pre-populated Comments
+        const commentsDatabase = {
+            1: [
+                { user: "Holkiano_69", text: "Un clásico de clásicos, este video fundó YouTube México +10 papu bkn", time: "Hace 2 horas" },
+                { user: "FernandoElTraidor", text: "Perdóname Edgar, solo quería ver si se caía de verdad jajaja", time: "Hace 5 horas" }
+            ]
+        };
+
+        // Web Audio Synthesizer Engine
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        // Synthesize Bouncing Peg Sound
+        function playBounceSound(pitchShift = 1) {
+            try {
+                if (!audioCtx) return;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                
+                osc.type = 'triangle';
+                const baseFreq = 300 + Math.random() * 300;
+                osc.frequency.setValueAtTime(baseFreq * pitchShift, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(80, audioCtx.currentTime + 0.05);
+
+                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
+
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.06);
+            } catch(e){}
+        }
+
+        // Synthesize Win Fanfare
+        function playWinFanfare(isGod = false) {
+            try {
+                if (!audioCtx) return;
+                const notes = isGod ? [400, 600, 800, 1200] : [300, 450, 600];
+                notes.forEach((freq, idx) => {
+                    setTimeout(() => {
+                        const osc = audioCtx.createOscillator();
+                        const gain = audioCtx.createGain();
+                        osc.type = isGod ? 'sawtooth' : 'sine';
+                        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                        
+                        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.25);
+
+                        osc.connect(gain);
+                        gain.connect(audioCtx.destination);
+
+                        osc.start();
+                        osc.stop(audioCtx.currentTime + 0.26);
+                    }, idx * 70);
+                });
+            } catch(e){}
+        }
+
+        // Initialize App
+        document.addEventListener('DOMContentLoaded', () => {
+            renderMomos();
+            setupSearch();
+            simulateOnlineUsers();
+            initPlinkoEngine();
+            updateWalletDisplays();
+        });
+
+        // Navigation View Switcher
+        function switchView(viewName) {
+            initAudio();
+            const portalView = document.getElementById('portalView');
+            const plinkoView = document.getElementById('plinkoView');
+
+            if (viewName === 'plinko') {
+                portalView.classList.add('hidden');
+                plinkoView.classList.remove('hidden');
+                showToast("🎰 ¡Bienvenido a la ZONA SECRETA: PLINKO 360° INSANO!");
+            } else {
+                plinkoView.classList.add('hidden');
+                portalView.classList.remove('hidden');
+                if (isAutoDrop) toggleAutoDrop();
+            }
+        }
+
+        // Render Momo Cards Grid
+        function renderMomos() {
+            const grid = document.getElementById('momoGrid');
+            const emptyState = document.getElementById('emptyState');
+
+            let filtered = momosData.filter(momo => {
+                const matchesCategory = (currentCategory === 'Todos') ? true : (momo.category.toLowerCase() === currentCategory.toLowerCase());
+                const matchesSearch = momo.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                                      momo.author.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                      momo.desc.toLowerCase().includes(searchQuery.toLowerCase());
+                return matchesCategory && matchesSearch;
+            });
+
+            if (currentSort === 'views') filtered.sort((a, b) => b.viewsNum - a.viewsNum);
+            else if (currentSort === 'rating') filtered.sort((a, b) => b.rating - a.rating);
+            else if (currentSort === 'recent') filtered.sort((a, b) => b.id - a.id);
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            } else {
+                emptyState.classList.add('hidden');
+            }
+
+            grid.innerHTML = filtered.map(momo => {
+                const thumbUrl = `https://img.youtube.com/vi/${momo.youtubeId}/hqdefault.jpg`;
+                return `
+                    <div onclick="openMomoModal(${momo.id})" class="bg-tosti-card rounded-lg overflow-hidden border border-tosti-border hover:border-tosti-orange transition-all duration-300 cursor-pointer group flex flex-col justify-between shadow-md hover:shadow-tosti-orange/10 hover:-translate-y-1">
+                        <div>
+                            <div class="relative aspect-video bg-black overflow-hidden">
+                                <img src="${thumbUrl}" alt="${momo.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 opacity-90 group-hover:opacity-100">
+                                <span class="absolute bottom-1.5 right-1.5 bg-black/85 text-white font-black text-[10px] px-1.5 py-0.5 rounded border border-white/10">
+                                    ${momo.duration}
+                                </span>
+                                <span class="absolute top-1.5 left-1.5 momo-badge text-black font-black text-[9px] px-1.5 py-0.5 rounded shadow uppercase">
+                                    MOMO GOD
+                                </span>
+                                <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <div class="w-11 h-11 rounded-full bg-tosti-orange text-black flex items-center justify-center text-lg pl-0.5 shadow-xl transform group-hover:scale-110 transition-transform">
+                                        <i class="fas fa-play"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-3">
+                                <h3 class="text-xs font-bold text-gray-100 group-hover:text-tosti-orange transition line-clamp-2 leading-snug mb-1.5">
+                                    ${momo.title}
+                                </h3>
+                                <div class="flex items-center gap-1.5 text-[11px] text-gray-400">
+                                    <span class="hover:text-white transition font-medium">${momo.author}</span>
+                                    <i class="fas fa-check-circle text-tosti-orange text-[10px]"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="px-3 pb-3 pt-0 flex items-center justify-between text-[11px] text-gray-400 border-t border-tosti-border/50 mt-2">
+                            <span><i class="fas fa-eye text-tosti-orange/80 mr-1"></i>${momo.views}</span>
+                            <span class="text-tosti-orange font-extrabold flex items-center gap-1">
+                                <i class="fas fa-thumbs-up"></i> ${momo.rating}%
+                            </span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function setupSearch() {
+            const searchInput = document.getElementById('searchInput');
+            const searchBtn = document.getElementById('searchBtn');
+
+            searchInput.addEventListener('keyup', (e) => {
+                searchQuery = e.target.value.trim();
+                renderMomos();
+            });
+
+            searchBtn.addEventListener('click', () => {
+                searchQuery = searchInput.value.trim();
+                renderMomos();
+            });
+        }
+
+        function filterCategory(catName) {
+            currentCategory = catName;
+            document.getElementById('currentCategoryTitle').innerText = (catName === 'Todos') ? 'Todos los Momos Gods' : `Categoría: ${catName}`;
+            renderMomos();
+        }
+
+        function sortMomos(sortVal) {
+            currentSort = sortVal;
+            renderMomos();
+        }
+
+        function resetAllFilters() {
+            currentCategory = 'Todos';
+            searchQuery = '';
+            document.getElementById('searchInput').value = '';
+            filterCategory('Todos');
+        }
+
+        function playRandomMomo() {
+            const randomIndex = Math.floor(Math.random() * momosData.length);
+            openMomoModal(momosData[randomIndex].id);
+        }
+
+        function openMomoModal(momoId) {
+            initAudio();
+            const momo = momosData.find(m => m.id === momoId);
+            if (!momo) return;
+
+            currentMomo = momo;
+            const modal = document.getElementById('videoModal');
+            document.getElementById('modalIframe').src = `https://www.youtube-nocookie.com/embed/${momo.youtubeId}?autoplay=1&enablejsapi=1`;
+
+            document.getElementById('modalMomoTitle').innerText = momo.title;
+            document.getElementById('modalMomoCategory').innerText = momo.category;
+            document.getElementById('modalMomoViews').innerText = momo.views;
+            document.getElementById('modalMomoDate').innerText = momo.date;
+            document.getElementById('modalMomoRating').innerText = `${momo.rating}%`;
+            document.getElementById('modalMomoDesc').innerText = momo.desc;
+
+            renderComments(momo.id);
+            renderRecommendedMomos(momo.id);
+
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            document.getElementById('modalIframe').src = "";
+            document.getElementById('videoModal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        function renderComments(momoId) {
+            const list = document.getElementById('commentsList');
+            const comments = commentsDatabase[momoId] || [
+                { user: "GrasosoAnonimo", text: "Este momo pertenece al salón de la fama sin duda alguna.", time: "Hace 2 horas" },
+                { user: "Papu_Master", text: "+10 prro lince de las praderas memorables", time: "Hace 5 horas" }
+            ];
+            document.getElementById('commentsCount').innerText = comments.length;
+            list.innerHTML = comments.map(c => `
+                <div class="bg-[#181818] p-2.5 rounded-md border border-tosti-border/60 text-xs">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="font-black text-tosti-orange">${c.user}</span>
+                        <span class="text-[10px] text-gray-500">${c.time}</span>
+                    </div>
+                    <p class="text-gray-300 leading-relaxed">${c.text}</p>
+                </div>
+            `).join('');
+        }
+
+        function postComment() {
+            if (!currentMomo) return;
+            const input = document.getElementById('commentInput');
+            if (!input.value.trim()) return;
+
+            if (!commentsDatabase[currentMomo.id]) commentsDatabase[currentMomo.id] = [];
+            commentsDatabase[currentMomo.id].unshift({
+                user: "Tú (MomoFan God)",
+                text: input.value.trim(),
+                time: "Ahora mismo"
+            });
+            input.value = '';
+            renderComments(currentMomo.id);
+            showToast("¡Comentario publicado!");
+        }
+
+        function renderRecommendedMomos(currentId) {
+            const container = document.getElementById('recommendedGrid');
+            const related = momosData.filter(m => m.id !== currentId).slice(0, 6);
+            container.innerHTML = related.map(m => `
+                <div onclick="openMomoModal(${m.id})" class="flex gap-2.5 bg-[#181818] hover:bg-[#222] p-2 rounded-md cursor-pointer border border-tosti-border/40 hover:border-tosti-orange/60 transition">
+                    <div class="relative w-24 h-14 bg-black rounded overflow-hidden shrink-0">
+                        <img src="https://img.youtube.com/vi/${m.youtubeId}/hqdefault.jpg" class="w-full h-full object-cover">
+                    </div>
+                    <div class="flex-1 min-w-0 flex flex-col justify-between">
+                        <h4 class="text-xs font-bold text-gray-200 line-clamp-2 hover:text-tosti-orange transition">${m.title}</h4>
+                        <span class="text-[10px] text-tosti-orange font-bold">${m.rating}% Aprobado</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function toggleLike() {
+            if (!currentMomo) return;
+            currentMomo.rating = Math.min(100, currentMomo.rating + 1);
+            document.getElementById('modalMomoRating').innerText = `${currentMomo.rating}%`;
+            showToast("👍 ¡Momo aprobado +10!");
+        }
+
+        function toggleSaveMomo() {
+            showToast("⭐ Momo guardado en Favoritos");
+        }
+
+        function shareMomo() {
+            showToast("🔗 ¡Enlace del Momo copiado!");
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMsg').innerText = msg;
+            toast.classList.remove('translate-y-24', 'opacity-0');
+            setTimeout(() => toast.classList.add('translate-y-24', 'opacity-0'), 3000);
+        }
+
+        function simulateOnlineUsers() {
+            setInterval(() => {
+                const el = document.getElementById('onlineUsers');
+                if (el) {
+                    let current = parseInt(el.innerText.replace(',', ''));
+                    current += Math.floor(Math.random() * 11) - 5;
+                    el.innerText = current.toLocaleString();
+                }
+            }, 3000);
+        }
+
+        /* ==========================================================================
+           SECRET ZONE - PLINKO 360° CRAZY PHYSICS & ANIMATION ENGINE
+           ========================================================================== */
+
+        let canvas, ctx;
+        let boardAngle = 0;
+        let balls = [];
+        let particles = [];
+        let pegs = [];
+        let multiplierSlots = [];
+        
+        const SLOTS_COUNT = 24;
+        const BOARD_RADIUS = 230;
+        const CENTER_X = 260;
+        const CENTER_Y = 260;
+
+        // Multipliers layout array around the 360 circle
+        const slotMultipliers = [
+            100, 0.1, 1.5, 0.5, 10, 0.1, 2, 25, 0.5, 1, 50, 0.2,
+            3, 0.1, 15, 0.5, 100, 0.1, 5, 1, 30, 0.2, 2, 10
+        ];
+
+        // Color mapping for multipliers
+        function getMultColor(m) {
+            if (m >= 50) return '#ff0055'; // Neon pink/red
+            if (m >= 15) return '#ff9000'; // Tosti Orange
+            if (m >= 5) return '#9d4edd';  // Purple
+            if (m >= 2) return '#00f0ff';  // Cyan
+            if (m >= 1) return '#00ff66';  // Neon Green
+            return '#333344';              // Low multiplier dark
+        }
+
+        // Initialize Plinko Engine
+        function initPlinkoEngine() {
+            canvas = document.getElementById('plinkoCanvas');
+            if (!canvas) return;
+            ctx = canvas.getContext('2d');
+
+            // Generate concentric peg rings
+            pegs = [];
+            const ringRadii = [40, 80, 120, 160, 200];
+            const ringPegCounts = [6, 12, 18, 24, 30];
+
+            ringRadii.forEach((r, idx) => {
+                const count = ringPegCounts[idx];
+                const angleStep = (Math.PI * 2) / count;
+                const offset = (idx % 2 === 0) ? 0 : angleStep / 2;
+
+                for (let i = 0; i < count; i++) {
+                    const pegAngle = i * angleStep + offset;
+                    pegs.push({
+                        r: r,
+                        angle: pegAngle,
+                        radius: 4,
+                        hitGlow: 0
+                    });
+                }
+            });
+
+            // Canvas Click Direct Launcher
+            canvas.addEventListener('click', (e) => {
+                initAudio();
+                const rect = canvas.getBoundingClientRect();
+                const clickX = e.clientX - rect.left;
+                const clickY = e.clientY - rect.top;
+                
+                // Direction vector from center to click
+                const dx = clickX - CENTER_X;
+                const dy = clickY - CENTER_Y;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                
+                if (dist > 10) {
+                    dropSingleBall(dx / dist, dy / dist);
+                } else {
+                    dropSingleBall(0, 1);
+                }
+            });
+
+            // Start Animation Loop
+            requestAnimationFrame(plinkoLoop);
+        }
+
+        // Betting Controls Logic
+        function setBet(amount) {
+            currentBet = amount;
+            document.getElementById('betSlider').value = amount;
+            updateBetUI();
+        }
+
+        function updateBetFromSlider(val) {
+            currentBet = parseInt(val);
+            updateBetUI();
+        }
+
+        function setBetAllIn() {
+            currentBet = Math.max(10, userWallet);
+            document.getElementById('betSlider').value = currentBet;
+            updateBetUI();
+            showToast("🔥 ¡HAS HECHO ALL IN PAPU!");
+        }
+
+        function updateBetUI() {
+            document.getElementById('currentBetText').innerText = `$${currentBet}`;
+        }
+
+        function setBallBurst(count) {
+            ballBurstCount = count;
+            document.querySelectorAll('.burst-btn').forEach(btn => {
+                if (btn.innerText.includes(`${count}`)) {
+                    btn.className = "burst-btn bg-tosti-orange text-black font-black text-xs py-2 rounded transition";
+                } else {
+                    btn.className = "burst-btn bg-[#222] text-gray-300 hover:bg-[#333] font-black text-xs py-2 rounded transition";
+                }
+            });
+        }
+
+        function setRotationSpeed(mode) {
+            if (mode === 'normal') rotationSpeedFactor = 0.015;
+            else if (mode === 'insane') rotationSpeedFactor = 0.035;
+            else if (mode === 'god') rotationSpeedFactor = 0.08;
+
+            const label = document.getElementById('speedLabel');
+            if (mode === 'normal') label.innerText = "Normal 🌀";
+            else if (mode === 'insane') label.innerText = "Modo Insano ⚡";
+            else if (mode === 'god') label.innerText = "Super Sayayin 360° 🔥";
+
+            showToast(`Velocidad ajustada: ${label.innerText}`);
+        }
+
+        function toggleAutoDrop() {
+            isAutoDrop = !isAutoDrop;
+            const btn = document.getElementById('autoDropBtn');
+            if (isAutoDrop) {
+                btn.className = "bg-red-600 text-white font-black text-xs py-2 rounded transition animate-pulse";
+                btn.innerText = "PARAR AUTO";
+                autoDropInterval = setInterval(() => {
+                    triggerDrop();
+                }, 400);
+            } else {
+                btn.className = "bg-purple-900/60 hover:bg-purple-800 text-purple-300 border border-purple-500/40 font-black text-xs py-2 rounded transition";
+                btn.innerText = "AUTO";
+                clearInterval(autoDropInterval);
+            }
+        }
+
+        function claimLimosna() {
+            initAudio();
+            userWallet += 500;
+            updateWalletDisplays();
+            playWinFanfare(false);
+            showToast("💵 ¡El Canaca te ha financiado +$500 TostiPesos!");
+        }
+
+        function updateWalletDisplays() {
+            document.getElementById('topBalanceDisplay').innerText = `$${userWallet.toLocaleString()}`;
+            document.getElementById('plinkoWalletDisplay').innerText = `$${userWallet.toLocaleString()}`;
+        }
+
+        // Trigger Ball Drops
+        function triggerDrop() {
+            initAudio();
+            if (userWallet < currentBet) {
+                showToast("⚠️ ¡Bancarrota! Pide limosna grasosa para seguir jugando.");
+                if (isAutoDrop) toggleAutoDrop();
+                return;
+            }
+
+            for (let i = 0; i < ballBurstCount; i++) {
+                setTimeout(() => {
+                    if (userWallet >= currentBet) {
+                        userWallet -= currentBet;
+                        updateWalletDisplays();
+                        
+                        // Launch with slight angle scatter
+                        const angle = (Math.PI / 2) + (Math.random() * 0.6 - 0.3);
+                        dropSingleBall(Math.cos(angle), Math.sin(angle));
+                    }
+                }, i * 120);
+            }
+        }
+
+        function dropSingleBall(dirX, dirY) {
+            balls.push({
+                x: CENTER_X + dirX * 15,
+                y: CENTER_Y + dirY * 15,
+                vx: dirX * (2 + Math.random() * 2),
+                vy: dirY * (2 + Math.random() * 2),
+                radius: 6,
+                color: '#ffd700',
+                trail: [],
+                betAmount: currentBet
+            });
+        }
+
+        // Main Animation & Physics Loop
+        function plinkoLoop() {
+            // Clear canvas with subtle trail fade
+            ctx.fillStyle = '#0e0a14';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Rotate pegboard
+            boardAngle += rotationSpeedFactor;
+
+            // Draw outer neon border ring
+            ctx.beginPath();
+            ctx.arc(CENTER_X, CENTER_Y, BOARD_RADIUS + 5, 0, Math.PI * 2);
+            ctx.strokeStyle = 'rgba(157, 78, 221, 0.4)';
+            ctx.lineWidth = 4;
+            ctx.stroke();
+
+            // Draw Multiplier slots perimeter
+            const slotAngleStep = (Math.PI * 2) / SLOTS_COUNT;
+            for (let i = 0; i < SLOTS_COUNT; i++) {
+                const startA = boardAngle + i * slotAngleStep;
+                const endA = startA + slotAngleStep;
+                const mult = slotMultipliers[i];
+                const color = getMultColor(mult);
+
+                // Slot arc segment
+                ctx.beginPath();
+                ctx.arc(CENTER_X, CENTER_Y, BOARD_RADIUS, startA, endA);
+                ctx.arc(CENTER_X, CENTER_Y, BOARD_RADIUS - 18, endA, startA, true);
+                ctx.closePath();
+
+                ctx.fillStyle = color;
+                ctx.globalAlpha = 0.85;
+                ctx.fill();
+                ctx.strokeStyle = '#000000';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+                ctx.globalAlpha = 1.0;
+
+                // Multiplier label text
+                const midA = startA + slotAngleStep / 2;
+                const textR = BOARD_RADIUS - 9;
+                const tx = CENTER_X + Math.cos(midA) * textR;
+                const ty = CENTER_Y + Math.sin(midA) * textR;
+
+                ctx.save();
+                ctx.translate(tx, ty);
+                ctx.rotate(midA + Math.PI / 2);
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '900 9px Inter';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(`${mult}x`, 0, 0);
+                ctx.restore();
+            }
+
+            // Draw and update Rotating Pegs
+            pegs.forEach(peg => {
+                const absAngle = peg.angle + boardAngle;
+                const px = CENTER_X + Math.cos(absAngle) * peg.r;
+                const py = CENTER_Y + Math.sin(absAngle) * peg.r;
+
+                // Tangential linear velocity of peg due to 360° rotation
+                const pegVx = -Math.sin(absAngle) * peg.r * rotationSpeedFactor;
+                const pegVy = Math.cos(absAngle) * peg.r * rotationSpeedFactor;
+
+                // Draw Peg
+                ctx.beginPath();
+                ctx.arc(px, py, peg.radius + (peg.hitGlow > 0 ? 2 : 0), 0, Math.PI * 2);
+                ctx.fillStyle = peg.hitGlow > 0 ? '#ffffff' : '#e0a96d';
+                ctx.fill();
+
+                if (peg.hitGlow > 0) {
+                    ctx.shadowColor = '#ff9000';
+                    ctx.shadowBlur = 10;
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                    peg.hitGlow -= 0.1;
+                }
+
+                // Check Ball Collision with Peg
+                balls.forEach(ball => {
+                    const dx = ball.x - px;
+                    const dy = ball.y - py;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    const minDist = ball.radius + peg.radius;
+
+                    if (dist < minDist) {
+                        // Collision normal vector
+                        const nx = dx / (dist || 1);
+                        const ny = dy / (dist || 1);
+
+                        // Separate ball from peg
+                        ball.x = px + nx * (minDist + 0.5);
+                        ball.y = py + ny * (minDist + 0.5);
+
+                        // Relative velocity including peg rotation speed
+                        const relVx = ball.vx - pegVx;
+                        const relVy = ball.vy - pegVy;
+
+                        // Reflect relative velocity
+                        const dot = relVx * nx + relVy * ny;
+                        const restitution = 0.75; // Bounciness
+                        const newRelVx = relVx - (1 + restitution) * dot * nx;
+                        const newRelVy = relVy - (1 + restitution) * dot * ny;
+
+                        // Restore absolute velocity
+                        ball.vx = newRelVx + pegVx;
+                        ball.vy = newRelVy + pegVy;
+
+                        peg.hitGlow = 1.0;
+                        playBounceSound(1 + (peg.r / 200));
+
+                        // Spawn collision spark particles
+                        for (let k = 0; k < 3; k++) {
+                            particles.push({
+                                x: px,
+                                y: py,
+                                vx: (Math.random() - 0.5) * 4,
+                                vy: (Math.random() - 0.5) * 4,
+                                life: 1.0,
+                                color: '#ff9000'
+                            });
+                        }
+                    }
+                });
+            });
+
+            // Update & Render Balls
+            for (let i = balls.length - 1; i >= 0; i--) {
+                const b = balls[i];
+
+                // Radial gravity pushing outwards towards perimeter + slight downward bias
+                const dxFromCenter = b.x - CENTER_X;
+                const dyFromCenter = b.y - CENTER_Y;
+                const distCenter = Math.sqrt(dxFromCenter * dxFromCenter + dyFromCenter * dyFromCenter);
+                
+                const radialDirX = dxFromCenter / (distCenter || 1);
+                const radialDirY = dyFromCenter / (distCenter || 1);
+
+                // Outward centrifugal acceleration
+                b.vx += radialDirX * 0.12;
+                b.vy += radialDirY * 0.12 + 0.05; // Standard downward pull component
+
+                // Apply velocity
+                b.x += b.vx;
+                b.y += b.vy;
+
+                // Motion Trail
+                b.trail.push({ x: b.x, y: b.y });
+                if (b.trail.length > 8) b.trail.shift();
+
+                // Draw motion trail
+                for (let t = 0; t < b.trail.length; t++) {
+                    const p = b.trail[t];
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, b.radius * (t / b.trail.length), 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255, 215, 0, ${t / b.trail.length * 0.4})`;
+                    ctx.fill();
+                }
+
+                // Draw Ball
+                ctx.beginPath();
+                ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
+                ctx.fillStyle = b.color;
+                ctx.shadowColor = '#ffd700';
+                ctx.shadowBlur = 12;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Check landing in Multiplier slot ring
+                if (distCenter >= BOARD_RADIUS - 15) {
+                    // Determine which angular slot the ball hit
+                    let ballAngle = Math.atan2(b.y - CENTER_Y, b.x - CENTER_X);
+                    if (ballAngle < 0) ballAngle += Math.PI * 2;
+
+                    // Adjust angle relative to rotating board
+                    let relAngle = (ballAngle - boardAngle) % (Math.PI * 2);
+                    if (relAngle < 0) relAngle += Math.PI * 2;
+
+                    const slotIndex = Math.floor(relAngle / slotAngleStep) % SLOTS_COUNT;
+                    const multHit = slotMultipliers[slotIndex];
+
+                    // Process Win Payout
+                    processSlotHit(multHit, b.betAmount, b.x, b.y);
+
+                    // Remove ball
+                    balls.splice(i, 1);
+                }
+            }
+
+            // Update & Render Particles
+            for (let p = particles.length - 1; p >= 0; p--) {
+                const pt = particles[p];
+                pt.x += pt.vx;
+                pt.y += pt.vy;
+                pt.life -= 0.04;
+
+                if (pt.life <= 0) {
+                    particles.splice(p, 1);
+                } else {
+                    ctx.beginPath();
+                    ctx.arc(pt.x, pt.y, 2.5 * pt.life, 0, Math.PI * 2);
+                    ctx.fillStyle = pt.color;
+                    ctx.globalAlpha = pt.life;
+                    ctx.fill();
+                    ctx.globalAlpha = 1.0;
+                }
+            }
+
+            // Draw Center Spinner Cap
+            ctx.beginPath();
+            ctx.arc(CENTER_X, CENTER_Y, 18, 0, Math.PI * 2);
+            ctx.fillStyle = '#ff9000';
+            ctx.fill();
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            ctx.fillStyle = '#000000';
+            ctx.font = '900 10px Inter';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('360°', CENTER_X, CENTER_Y);
+
+            requestAnimationFrame(plinkoLoop);
+        }
+
+        // Process Slot Hit Event & Trigger Reactions
+        function processSlotHit(multiplier, betAmount, hitX, hitY) {
+            const winAmount = Math.floor(betAmount * multiplier);
+            userWallet += winAmount;
+            updateWalletDisplays();
+
+            document.getElementById('lastWinDisplay').innerText = `+$${winAmount.toLocaleString()}`;
+
+            // Add to drop history ticker
+            addDropHistory(multiplier, winAmount);
+
+            // Screen Shake for big multipliers
+            if (multiplier >= 10) {
+                const card = document.getElementById('canvasCard');
+                card.classList.add('shake-insane');
+                setTimeout(() => card.classList.remove('shake-insane'), 350);
+            }
+
+            // Explosion particles
+            for (let k = 0; k < 18; k++) {
+                particles.push({
+                    x: hitX,
+                    y: hitY,
+                    vx: (Math.random() - 0.5) * 8,
+                    vy: (Math.random() - 0.5) * 8,
+                    life: 1.0,
+                    color: getMultColor(multiplier)
+                });
+            }
+
+            // Play Sound
+            playWinFanfare(multiplier >= 25);
+
+            // Trigger Momo God Live Reaction
+            triggerMomoReaction(multiplier, winAmount);
+        }
+
+        // Add history pill
+        function addDropHistory(mult, win) {
+            const container = document.getElementById('dropHistoryList');
+            if (container.children[0] && container.children[0].tagName === 'SPAN' && container.children[0].innerText.includes('italic')) {
+                container.innerHTML = '';
+            }
+
+            const colorClass = mult >= 25 ? 'bg-red-600 text-white font-black' : 
+                               mult >= 5 ? 'bg-amber-500 text-black font-black' : 
+                               mult >= 1 ? 'bg-purple-900 text-purple-200 font-bold' : 'bg-gray-800 text-gray-400';
+
+            const pill = document.createElement('div');
+            pill.className = `px-2 py-1 rounded text-[10px] ${colorClass} shadow shrink-0 animate-bounce-short`;
+            pill.innerText = `${mult}x ($${win})`;
+
+            container.insertBefore(pill, container.firstChild);
+            if (container.children.length > 18) container.removeChild(container.lastChild);
+        }
+
+        // Trigger Momo Reaction Popup & Live Meme Feed
+        function triggerMomoReaction(mult, win) {
+            const imgEl = document.getElementById('momoMemeImg');
+            const titleEl = document.getElementById('momoMemeTitle');
+            const quoteEl = document.getElementById('momoMemeQuote');
+
+            let memeImg = '';
+            let title = '';
+            let quote = '';
+
+            if (mult >= 100) {
+                memeImg = 'https://img.youtube.com/vi/u0yT7v7S2iY/hqdefault.jpg';
+                title = '¡ESTO SE VA A DESCONTROLAR!';
+                quote = '¡AUXILIO, ME CAÍ EN EL 100X GOD PAPU!';
+                openJackpotModal(mult, win, title, quote, memeImg);
+            } else if (mult >= 50) {
+                memeImg = 'https://img.youtube.com/vi/2Q21e25g0p8/hqdefault.jpg';
+                title = '¡ME COMPRÉ UNA SALCHIPAPA!';
+                quote = '¡Qué sabrosa ganancia de ' + mult + 'x!';
+                openJackpotModal(mult, win, title, quote, memeImg);
+            } else if (mult >= 25) {
+                memeImg = 'https://img.youtube.com/vi/b89CnP0Iq30/hqdefault.jpg';
+                title = '¡YA GÜEY! ¡PINCHE PENDEJO!';
+                quote = 'Edgar aprueba este tiro legendario de ' + mult + 'x.';
+                openJackpotModal(mult, win, title, quote, memeImg);
+            } else if (mult >= 10) {
+                memeImg = 'https://img.youtube.com/vi/Lp51T8L8bE0/hqdefault.jpg';
+                title = '¡Y MIS 50 MIL PESOS QUÉ!';
+                quote = 'El Canaca declara esta bola victoriosa.';
+            } else if (mult >= 2) {
+                memeImg = 'https://img.youtube.com/vi/k_U_M2R6iXw/hqdefault.jpg';
+                title = 'Afirmativo Señorita';
+                quote = 'Multiplicador seguro para la banda grasosa.';
+            } else {
+                memeImg = 'https://img.youtube.com/vi/8Z72p6I4N9Y/hqdefault.jpg';
+                title = '¡Se le apagó la tele al viejito!';
+                quote = 'Un tiro humilde de ' + mult + 'x... Reintenta papu.';
+            }
+
+            imgEl.src = memeImg;
+            titleEl.innerText = title;
+            quoteEl.innerText = `"${quote}"`;
+
+            // Floating text reaction over canvas
+            const overlay = document.getElementById('momoReactionOverlay');
+            const floatText = document.createElement('div');
+            floatText.className = 'float-reaction text-center font-black drop-shadow-2xl';
+            floatText.innerHTML = `
+                <span class="text-2xl text-yellow-300 block font-black">${mult}x</span>
+                <span class="text-xs text-white bg-black/80 px-2 py-0.5 rounded border border-amber-400">${title}</span>
+            `;
+            overlay.appendChild(floatText);
+            setTimeout(() => floatText.remove(), 1800);
+        }
+
+        // Jackpot Modal
+        function openJackpotModal(mult, win, title, sub, img) {
+            document.getElementById('jackpotImg').src = img;
+            document.getElementById('jackpotTitle').innerText = title;
+            document.getElementById('jackpotSub').innerText = sub;
+            document.getElementById('jackpotMultText').innerText = `${mult}x`;
+            document.getElementById('jackpotAmountText').innerText = `$${win.toLocaleString()} TOSTIPESOS`;
+            document.getElementById('jackpotModal').classList.remove('hidden');
+        }
+
+        function closeJackpotModal() {
+            document.getElementById('jackpotModal').classList.add('hidden');
+        }
+
+        // Play random meme audio sample synthesizer chime
+        function playRandomMomoSound() {
+            initAudio();
+            playWinFanfare(true);
+            showToast("🎵 ¡Sonando cumbia grasosa en vivo!");
+        }
+
+        // Mobile Sidebar Toggle
+        document.getElementById('mobileSidebarToggle').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.toggle('hidden');
+        });
+    </script>
+</body>
+</html>
